@@ -27,4 +27,3 @@ A machine learning based web application that predicts future demand and display
 4. Open in browser:
    http://127.0.0.1:5000
 <img width="1894" height="1007" alt="Screenshot 2026-04-05 193240" src="https://github.com/user-attachments/assets/22980b0d-04b8-4c27-9a0a-58db13d59fc8" />
-<img width="1894" height="1007" alt="image" src="https://github.com/user-attachments/assets/715c1d49-0e2d-42c3-8140-7cefdddc9db0" />
