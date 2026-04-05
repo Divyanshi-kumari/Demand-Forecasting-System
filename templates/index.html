@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demand Forecasting BI Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1f3b73, #2b5fb3);
+            color: white;
+            padding: 20px 30px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .header p {
+            margin: 6px 0 0;
+            opacity: 0.9;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            margin: 24px auto;
+        }
+
+        .filters, .cards, .content-grid, .bottom-grid {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .filters {
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            background: white;
+            padding: 18px;
+            border-radius: 14px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+
+        .cards {
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+
+        .metric-title {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: bold;
+            margin-top: 8px;
+            color: #1f3b73;
+        }
+
+        .content-grid {
+            grid-template-columns: 2fr 1fr;
+        }
+
+        .bottom-grid {
+            grid-template-columns: 1.4fr 1fr;
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 14px;
+            color: #1f3b73;
+        }
+
+        select, button, input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-size: 14px;
+        }
+
+        button {
+            background: #1f3b73;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #16305d;
+        }
+
+        .secondary-btn {
+            background: #e5e7eb;
+            color: #111827;
+        }
+
+        .secondary-btn:hover {
+            background: #d1d5db;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background: #eaf1ff;
+            color: #1f3b73;
+        }
+
+        .workflow-step {
+            padding: 10px 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            background: #eef2ff;
+            font-weight: 600;
+        }
+
+        .small-note {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 900px) {
+            .content-grid, .bottom-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Demand Forecasting Business Intelligence Dashboard</h1>
+        <p>Sales • Inventory • Calendar based Forecasting</p>
+    </div>
+
+    <div class="container">
+
+        <div class="filters">
+            <select id="sector">
+                <option value="North">North Sector</option>
+                <option value="East">East Sector</option>
+                <option value="West">West Sector</option>
+                <option value="South">South Sector</option>
+                <option value="Overall">Overall Organization</option>
+            </select>
+
+            <select id="level">
+                <option value="shop">Shop</option>
+                <option value="subsector">Sub-Sector</option>
+                <option value="sector">Sector</option>
+                <option value="overall">Overall</option>
+            </select>
+
+            <select id="period">
+                <option value="weekly">Weekly Forecast</option>
+                <option value="monthly">Monthly Forecast</option>
+                <option value="quarterly">Quarterly Forecast</option>
+            </select>
+
+            <input type="number" id="year" value="2020" placeholder="Forecast Year">
+
+            <button onclick="getPrediction()">Generate Forecast</button>
+        </div>
+
+        <div class="cards">
+            <div class="card">
+                <div class="metric-title">Total Forecast</div>
+                <div class="metric-value" id="totalForecast">0</div>
+            </div>
+            <div class="card">
+                <div class="metric-title">Total Actual</div>
+                <div class="metric-value" id="totalActual">0</div>
+            </div>
+            <div class="card">
+                <div class="metric-title">Average Accuracy</div>
+                <div class="metric-value" id="avgAccuracy">0%</div>
+            </div>
+            <div class="card">
+                <div class="metric-title">Selected Sector</div>
+                <div class="metric-value" id="selectedSector">North</div>
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <div class="card">
+                <div class="panel-title">Historical vs Forecast Trend</div>
+                <canvas id="forecastChart" height="120"></canvas>
+                <div class="small-note">Graph should remain static after prediction, not auto-run.</div>
+            </div>
+
+            <div class="card">
+                <div class="panel-title">Workflow Status</div>
+                <div class="workflow-step">1. Forecast Generated</div>
+                <div class="workflow-step">2. Customization Review</div>
+                <div class="workflow-step">3. Approval Pending</div>
+                <div class="workflow-step">4. Final Submission</div>
+                <div class="small-note">This follows the paper’s forecast customization and approval flow.</div>
+            </div>
+        </div>
+
+        <div class="bottom-grid">
+            <div class="card">
+                <div class="panel-title">Actual vs Predicted Comparison</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Week</th>
+                            <th>Actual</th>
+                            <th>Predicted</th>
+                            <th>Accuracy</th>
+                        </tr>
+                    </thead>
+                    <tbody id="forecastTableBody"></tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <div class="panel-title">Forecast Customization</div>
+                <label>Adjusted Prediction</label>
+                <input type="number" id="adjustedValue" placeholder="Enter revised forecast">
+                <br><br>
+                <button onclick="applyAdjustment()">Apply Change</button>
+                <br><br>
+                <button class="secondary-btn" onclick="sendForApproval()">Send for Approval</button>
+                <p class="small-note" id="actionMessage">No actions yet.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
